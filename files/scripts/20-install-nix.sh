@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-curl -fsSL https://install.determinate.systems/nix | sh -s -- install --daemon --no-confirm
+# Non-interactive install with defaults.
+curl -fsSL https://install.determinate.systems/nix | sh -s -- install --no-confirm
