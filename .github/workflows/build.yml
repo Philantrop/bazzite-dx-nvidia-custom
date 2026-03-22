@@ -20,7 +20,7 @@ jobs:
       - name: Build Custom Image (signed)
         uses: blue-build/github-action@v1
         env:
-          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          COSIGN_PASSWORD: ""
         with:
           recipe: recipe.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
