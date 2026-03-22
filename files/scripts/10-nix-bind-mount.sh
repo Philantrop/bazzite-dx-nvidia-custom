@@ -64,7 +64,4 @@ EOF
 # Nix config (see next section)
 install -D -m 0644 /dev/stdin /etc/nix/nix.conf <<'EOF'
 experimental-features = nix-command flakes
-auto-optimise-store = true
-warn-dirty = false
-store = daemon
 EOF
