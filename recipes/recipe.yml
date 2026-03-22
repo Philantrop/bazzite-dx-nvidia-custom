@@ -38,4 +38,5 @@ modules:
 
   - type: script
     scripts:
+      - 10-nix-bind-mount.sh
       - 90-cleanup.sh
