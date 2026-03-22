@@ -1,2 +1,0 @@
-enable nix.mount
-enable nix-daemon.service
