@@ -2,6 +2,7 @@
 set -euo pipefail
 
 # Create /nix mountpoint in the image (do not rely on tmpfiles for /nix; / is immutable at runtime)
+rm -rf /nix
 mkdir -p /nix
 
 # 1) tmpfiles: create /var/nix on boot
