@@ -2,6 +2,14 @@
 set -euo pipefail
 
 mkdir -p /nix
+mkdir -p /nix/store
+mkdir -p /nix/var/nix/daemon-socket
+
+chown -R root:root /nix
+chmod 0755 /nix
+chmod 0755 /nix/store
+chmod 0755 /nix/var /nix/var/nix /nix/var/nix/daemon-socket
+
 
 # Create /var/nix at boot via a oneshot service (avoid tmpfiles ordering cycles)
 install -D -m 0644 /dev/stdin /usr/lib/systemd/system/nix-var-nix.service <<'EOF'
@@ -55,8 +63,5 @@ install -D -m 0644 /dev/stdin /etc/nix/nix.conf <<'EOF'
 experimental-features = nix-command flakes
 auto-optimise-store = true
 warn-dirty = false
-
-# Force store under /nix (avoid symlinked /home issues)
-store = /nix/store
-state-dir = /var/lib/nix
+store = daemon
 EOF
