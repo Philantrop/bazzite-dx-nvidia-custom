@@ -29,9 +29,12 @@ EOF
 # Bind mount /var/nix -> /nix, ordered only relative to nix-var-nix.service and local-fs
 install -D -m 0644 /dev/stdin /usr/lib/systemd/system/nix.mount <<'EOF'
 [Unit]
-Description=Bind mount /var/nix to /nix for Nix store on immutable systems
-After=nix-var-nix.service
+Description=Mount /nix for Nix store (late, avoids local-fs ordering cycles)
+DefaultDependencies=no
+After=basic.target nix-var-nix.service
 Requires=nix-var-nix.service
+Before=multi-user.target nix-daemon.service
+Conflicts=umount.target
 
 [Mount]
 What=/var/nix
