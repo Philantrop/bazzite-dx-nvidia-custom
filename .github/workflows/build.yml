@@ -17,7 +17,44 @@ jobs:
       id-token: write
 
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Install skopeo
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y skopeo
+
+      - name: Get upstream digest (Bazzite stable)
+        id: upstream
+        run: |
+          set -euo pipefail
+          DIGEST="$(skopeo inspect --format '{{.Digest}}' docker://ghcr.io/ublue-os/bazzite-dx-nvidia:stable)"
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+          echo "Upstream digest: $DIGEST"
+
+      - name: Upstream digest cache gate
+        id: digestcache
+        uses: actions/cache@v4
+        with:
+          path: .upstream-digest-cache
+          key: upstream-bazzite-dx-nvidia-stable-${{ steps.upstream.outputs.digest }}
+
+      - name: Decide whether to skip scheduled build
+        id: gate
+        run: |
+          set -euo pipefail
+          mkdir -p .upstream-digest-cache
+
+          SKIP="false"
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "${{ steps.digestcache.outputs.cache-hit }}" = "true" ]; then
+            SKIP="true"
+          fi
+
+          echo "skip=$SKIP" >> "$GITHUB_OUTPUT"
+          echo "skip=$SKIP"
+
       - name: Build Custom Image (signed)
+        if: steps.gate.outputs.skip != 'true'
         uses: blue-build/github-action@v1
         env:
           COSIGN_PASSWORD: ""
