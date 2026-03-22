@@ -1,0 +1,15 @@
+[Unit]
+Description=Bind mount /var/nix to /nix for Nix store on immutable systems
+DefaultDependencies=no
+Before=local-fs.target
+After=systemd-tmpfiles-setup.service
+Requires=systemd-tmpfiles-setup.service
+
+[Mount]
+What=/var/nix
+Where=/nix
+Type=none
+Options=bind
+
+[Install]
+WantedBy=local-fs.target

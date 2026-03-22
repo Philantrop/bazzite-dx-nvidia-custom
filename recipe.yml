@@ -1,0 +1,63 @@
+# recipe.yml
+name: bazzite-dx-nvidia-custom
+description: "Bazzite DX NVIDIA (stable) + baked RPMs + snap + Nix (daemon) with /nix bind-mount to /var/nix + signed (cosign)"
+
+base-image: ghcr.io/ublue-os/bazzite-dx-nvidia:stable
+
+modules:
+  - type: dnf
+    install:
+      # KDE Discover + integrations
+      - plasma-discover
+      - plasma-discover-flatpak
+      - plasma-discover-kns
+      - plasma-discover-notifier
+      - plasma-discover-offline-updates
+      - plasma-discover-packagekit
+      - plasma-discover-rpm-ostree
+      - plasma-discover-snap
+
+      # Both compose variants available
+      - podman
+      - podman-plugins
+      - podman-compose
+
+      # snap
+      - snapd
+
+      # Minimal Nix prerequisites
+      - curl
+      - ca-certificates
+      - git
+      - xz
+      - bzip2
+      - gzip
+      - tar
+      - openssl
+      - shadow-utils
+
+  - type: files
+    src: files
+    dest: /
+
+  - type: script
+    scripts:
+      - |
+        #!/usr/bin/env bash
+        set -euxo pipefail
+
+        # Create /nix mountpoint inside the image.
+        # Do NOT rely on tmpfiles for /nix because / is effectively immutable at runtime.
+        mkdir -p /nix
+
+        # Install Nix (multi-user daemon).
+        # Runtime writes will go to /nix, which we bind-mount from /var/nix.
+        curl -fsSL https://install.determinate.systems/nix | sh -s -- install --daemon
+
+  - type: script
+    scripts:
+      - |
+        #!/usr/bin/env bash
+        set -euxo pipefail
+        dnf clean all || true
+        rm -rf /var/cache/dnf || true

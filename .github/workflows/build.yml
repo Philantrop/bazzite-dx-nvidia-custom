@@ -1,0 +1,29 @@
+name: bluebuild
+
+on:
+  push:
+    branches: [ "main" ]
+  schedule:
+    - cron: "0 4 * * 1"  # weekly Monday 04:00 UTC
+  workflow_dispatch:
+
+jobs:
+  bluebuild:
+    name: Build + Sign Custom Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    steps:
+      - name: Build Custom Image (signed)
+        uses: blue-build/github-action@v1
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+        with:
+          recipe: recipe.yml
+          cosign_private_key: ${{ secrets.SIGNING_SECRET }}
+          registry_token: ${{ github.token }}
+          pr_event_number: ${{ github.event.number }}
+          rechunk: "false"
