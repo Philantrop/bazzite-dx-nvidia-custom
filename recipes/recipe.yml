@@ -23,6 +23,9 @@ modules:
 
         - snapd
 
+        - nix
+        - nix-daemon
+
         - curl
         - ca-certificates
         - git
@@ -35,6 +38,4 @@ modules:
 
   - type: script
     scripts:
-      - 10-nix-bind-mount.sh
-      - 20-install-nix.sh
       - 90-cleanup.sh
