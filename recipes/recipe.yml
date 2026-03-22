@@ -37,7 +37,7 @@ modules:
       - shadow-utils
 
   - type: files
-    src: files
+    src: config/files
     dest: /
 
   - type: script
