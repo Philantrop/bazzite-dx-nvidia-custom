@@ -3,14 +3,12 @@ image-version: stable
 
 name: bazzite-dx-nvidia-custom
 description: "Bazzite DX NVIDIA stable + Discover integrations + snap + podman compose & podman-compose + Nix daemon with /nix bind-mounted to /var/nix (signed)"
-
 base-image: ghcr.io/ublue-os/bazzite-dx-nvidia
 
 modules:
   - type: dnf
     install:
       packages:
-        # KDE Discover + integrations (what you were layering)
         - plasma-discover
         - plasma-discover-flatpak
         - plasma-discover-kns
@@ -20,14 +18,11 @@ modules:
         - plasma-discover-rpm-ostree
         - plasma-discover-snap
 
-        # You want both compose variants available
         - podman
         - podman-compose
 
-        # You need snap (e.g. ipfs-desktop)
         - snapd
 
-        # Minimal Nix prerequisites
         - curl
         - ca-certificates
         - git
@@ -38,76 +33,8 @@ modules:
         - openssl
         - shadow-utils
 
-  # Create required files for /nix bind mount + Nix config + enable units by default
   - type: script
     scripts:
-      - |
-        #!/usr/bin/env bash
-        set -euxo pipefail
-
-        # Mountpoint exists in the image (do not rely on tmpfiles for /nix; / is immutable at runtime)
-        mkdir -p /nix
-
-        # 1) tmpfiles: create /var/nix on boot
-        install -D -m 0644 /dev/stdin /usr/lib/tmpfiles.d/nix.conf <<'EOF'
-        d /var/nix 0755 root root - -
-        EOF
-
-        # 2) systemd mount unit: bind /var/nix -> /nix
-        install -D -m 0644 /dev/stdin /usr/lib/systemd/system/nix.mount <<'EOF'
-        [Unit]
-        Description=Bind mount /var/nix to /nix for Nix store on immutable systems
-        DefaultDependencies=no
-        Before=local-fs.target
-        After=systemd-tmpfiles-setup.service
-        Requires=systemd-tmpfiles-setup.service
-
-        [Mount]
-        What=/var/nix
-        Where=/nix
-        Type=none
-        Options=bind
-
-        [Install]
-        WantedBy=local-fs.target
-        EOF
-
-        # 3) Ensure nix-daemon waits for nix.mount
-        mkdir -p /usr/lib/systemd/system/nix-daemon.service.d
-        install -D -m 0644 /dev/stdin /usr/lib/systemd/system/nix-daemon.service.d/10-nix-store.conf <<'EOF'
-        [Unit]
-        Requires=nix.mount
-        After=nix.mount
-        EOF
-
-        # 4) Enable units by default via systemd preset
-        install -D -m 0644 /dev/stdin /usr/lib/systemd/system-preset/90-nix.preset <<'EOF'
-        enable nix.mount
-        enable nix-daemon.service
-        EOF
-
-        # 5) System nix.conf (flakes enabled)
-        install -D -m 0644 /dev/stdin /etc/nix/nix.conf <<'EOF'
-        experimental-features = nix-command flakes
-        auto-optimise-store = true
-        warn-dirty = false
-        EOF
-
-  # Install Nix (daemon). You currently have an encrypted key with empty password,
-  # which is fine; just ensure COSIGN_PASSWORD is set to "" in the GH workflow.
-  - type: script
-    scripts:
-      - |
-        #!/usr/bin/env bash
-        set -euxo pipefail
-
-        curl -fsSL https://install.determinate.systems/nix | sh -s -- install --daemon
-
-  # Optional cleanup
-  - type: script
-    scripts:
-      - |
-        #!/usr/bin/env bash
-        set -euxo pipefail
-        dnf clean all || true
-        rm -rf /var/cache/dnf || true
+      - 10-nix-bind-mount.sh
+      - 20-install-nix.sh
+      - 90-cleanup.sh
