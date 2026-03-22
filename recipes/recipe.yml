@@ -22,7 +22,6 @@ modules:
 
         # You want both compose variants available
         - podman
-        - podman-plugins
         - podman-compose
 
         # You need snap (e.g. ipfs-desktop)
@@ -38,8 +37,6 @@ modules:
         - tar
         - openssl
         - shadow-utils
-
-        # NOTE: intentionally NOT installing coolercontrol or liquidctl.
 
   # Create required files for /nix bind mount + Nix config + enable units by default
   - type: script
