@@ -40,4 +40,5 @@ modules:
     scripts:
       - 10-nix-bind-mount.sh
       - 20-nix-selinux.sh
+      - 30-run0-selinux-workarounds.sh
       - 90-cleanup.sh
