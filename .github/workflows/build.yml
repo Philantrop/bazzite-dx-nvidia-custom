@@ -32,9 +32,9 @@ jobs:
           echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
           echo "Upstream digest: $DIGEST"
 
-      - name: Upstream digest cache gate
+      - name: Restore upstream digest cache gate
         id: digestcache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: .upstream-digest-cache
           key: upstream-bazzite-dx-nvidia-stable-${{ steps.upstream.outputs.digest }}
@@ -53,6 +53,13 @@ jobs:
           echo "skip=$SKIP" >> "$GITHUB_OUTPUT"
           echo "skip=$SKIP"
 
+      - name: Write upstream digest cache marker
+        if: steps.gate.outputs.skip != 'true' && steps.digestcache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p .upstream-digest-cache
+          echo "${{ steps.upstream.outputs.digest }}" > .upstream-digest-cache/digest.txt
+
       - name: Build Custom Image (signed)
         if: steps.gate.outputs.skip != 'true'
         uses: blue-build/github-action@v1
@@ -65,3 +72,10 @@ jobs:
           # Only PR events have a PR number; default to 0 otherwise.
           pr_event_number: ${{ github.event.pull_request.number || 0 }}
           rechunk: "false"
+
+      - name: Save upstream digest cache gate
+        if: steps.gate.outputs.skip != 'true' && steps.digestcache.outputs.cache-hit != 'true' && success()
+        uses: actions/cache/save@v4
+        with:
+          path: .upstream-digest-cache
+          key: upstream-bazzite-dx-nvidia-stable-${{ steps.upstream.outputs.digest }}
