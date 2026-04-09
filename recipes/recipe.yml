@@ -6,6 +6,10 @@ description: "Bazzite DX NVIDIA stable + Discover integrations + snap + podman c
 base-image: ghcr.io/ublue-os/bazzite-dx-nvidia
 
 modules:
+  - type: script
+    scripts:
+      - 05-terra-enable.sh
+
   - type: dnf
     install:
       packages:
@@ -20,6 +24,10 @@ modules:
 
         - podman
         - podman-compose
+
+        - repo: terra
+          packages:
+            - opensnitch
 
         - snapd
 
@@ -38,6 +46,7 @@ modules:
 
   - type: script
     scripts:
+      - 85-terra-disable.sh
       - 10-nix-bind-mount.sh
       - 20-nix-selinux.sh
       - 30-run0-selinux-workarounds.sh
