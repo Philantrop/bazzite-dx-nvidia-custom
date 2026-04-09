@@ -25,6 +25,7 @@ modules:
         - podman
         - podman-compose
 
+        - python3-pyqt6
         - opensnitch
 
         - snapd
