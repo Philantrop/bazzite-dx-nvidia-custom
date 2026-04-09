@@ -25,9 +25,7 @@ modules:
         - podman
         - podman-compose
 
-        - repo: terra
-          packages:
-            - opensnitch
+        - opensnitch
 
         - snapd
 
