@@ -1,0 +1,25 @@
+name: build-bazzite-image
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build (BlueBuild) and push to Forgejo registry
+        uses: https://github.com/blue-build/github-action@v1
+        with:
+          recipe: recipe.yml
+          pr_event_number: 0
+          cosign_private_key: ${{ secrets.SIGNING_SECRET }}
+          registry: forgejo.mailstation.de
+          registry_namespace: ${{ secrets.FORGEJO_REGISTRY_USER }}
+          registry_username: ${{ secrets.FORGEJO_REGISTRY_USER }}
+          registry_token: ${{ secrets.FORGEJO_REGISTRY_TOKEN }}
+          squash: "true"
+          maximize_build_space: "false"
