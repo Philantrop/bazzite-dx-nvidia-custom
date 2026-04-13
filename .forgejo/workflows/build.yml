@@ -24,3 +24,5 @@ jobs:
           registry_token: ${{ secrets.FORGEJO_REGISTRY_TOKEN }}
           squash: "true"
           maximize_build_space: "false"
+          # only verify on GitHub, skip on Forgejo
+          verify_install: ${{ github.server_url == 'https://github.com' }}
