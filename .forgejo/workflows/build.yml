@@ -12,7 +12,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build (BlueBuild) and push to Forgejo registry
-        uses: https://github.com/blue-build/github-action@v1
+        # Pinned pre-provenance-verification commit to avoid data.forgejo.org action resolution failures.
+        uses: https://github.com/blue-build/github-action@c1c1e56702055fb24f60660162e670203f977195
         with:
           recipe: recipe.yml
           pr_event_number: 0
@@ -24,5 +25,3 @@ jobs:
           registry_token: ${{ secrets.FORGEJO_REGISTRY_TOKEN }}
           squash: "true"
           maximize_build_space: "false"
-          # Forgejo runners resolve slsa-verifier against data.forgejo.org (404), so keep this off here.
-          verify_install: "false"
