@@ -67,6 +67,21 @@ jobs:
           chmod +x /usr/local/bin/bluebuild
           bluebuild --version
 
+      - name: Install cosign
+        shell: bash
+        run: |
+          set -euo pipefail
+          COSIGN_VERSION="v3.0.5"
+          arch="$(uname -m)"
+          case "$arch" in
+            x86_64) cosign_arch="amd64" ;;
+            aarch64|arm64) cosign_arch="arm64" ;;
+            *) echo "Unsupported arch: $arch" >&2; exit 1 ;;
+          esac
+          curl -fsSL "https://github.com/sigstore/cosign/releases/download/${COSIGN_VERSION}/cosign-linux-${cosign_arch}"             -o /usr/local/bin/cosign
+          chmod +x /usr/local/bin/cosign
+          cosign version
+
       - name: Build and push to Forgejo registry
         shell: bash
         working-directory: repo
