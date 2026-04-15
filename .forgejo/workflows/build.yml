@@ -8,20 +8,69 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
+    env:
+      # Mirror local tooling: `bluebuild --version` on the workstation
+      BLUEBUILD_VERSION: "v0.9.35"
 
-      - name: Build (BlueBuild) and push to Forgejo registry
-        # Pinned pre-provenance-verification commit to avoid data.forgejo.org action resolution failures.
-        uses: https://github.com/blue-build/github-action@c1c1e56702055fb24f60660162e670203f977195
-        with:
-          recipe: recipe.yml
-          pr_event_number: 0
-          cli_version: v0.9
-          cosign_private_key: ${{ secrets.SIGNING_SECRET }}
-          registry: forgejo.mailstation.de
-          registry_namespace: ${{ secrets.FORGEJO_REGISTRY_USER }}
-          registry_username: ${{ secrets.FORGEJO_REGISTRY_USER }}
-          registry_token: ${{ secrets.FORGEJO_REGISTRY_TOKEN }}
-          squash: "true"
-          maximize_build_space: "false"
+      RECIPE_PATH: "./recipes/recipe.yml"
+
+      # Push target (Forgejo registry)
+      BB_REGISTRY: "forgejo.mailstation.de"
+      BB_REGISTRY_NAMESPACE: ${{ secrets.FORGEJO_REGISTRY_USER }}
+      BB_USERNAME: ${{ secrets.FORGEJO_REGISTRY_USER }}
+      BB_PASSWORD: ${{ secrets.FORGEJO_REGISTRY_TOKEN }}
+
+      # Signing
+      COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
+
+      # Keep non-PR semantics (mirrors typical local usage)
+      GH_PR_EVENT_NUMBER: "0"
+
+      RUST_LOG_STYLE: "always"
+      CLICOLOR_FORCE: "1"
+
+    steps:
+      - name: Checkout (no external actions)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p repo
+          cd repo
+          git init -q
+          git remote add origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
+
+          # Use the automatic Actions token without putting it into URLs.
+          # Forgejo/Gitea commonly accepts `Authorization: token <token>`.
+          if git -c http.extraheader="Authorization: token ${GITHUB_TOKEN}" fetch -q --depth 1 origin "${GITHUB_SHA}"; then
+            :
+          else
+            # Fallback for instances expecting a Bearer token header.
+            git -c http.extraheader="Authorization: Bearer ${GITHUB_TOKEN}" fetch -q --depth 1 origin "${GITHUB_SHA}"
+          fi
+
+          git checkout -q --detach FETCH_HEAD
+
+      - name: Install BlueBuild CLI
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+
+          if ! command -v docker >/dev/null 2>&1; then
+            echo "docker missing on runner" >&2
+            exit 1
+          fi
+
+          docker create --name bluebuild-installer "ghcr.io/blue-build/cli:${BLUEBUILD_VERSION}-installer" >/dev/null
+          docker cp bluebuild-installer:/out/bluebuild /usr/local/bin/bluebuild
+          docker rm -f bluebuild-installer >/dev/null
+          chmod +x /usr/local/bin/bluebuild
+          bluebuild --version
+
+      - name: Build and push to Forgejo registry
+        shell: bash
+        working-directory: repo
+        run: |
+          set -euo pipefail
+          # Mirror local build, but with push enabled in CI
+          bluebuild build --push "${RECIPE_PATH}"
