@@ -9,12 +9,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: https://github.com/actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2 pinned (Forgejo provenance/SLSA)
+      - uses: actions/checkout@v4
+
       - name: Build (BlueBuild) and push to Forgejo registry
         # Pinned pre-provenance-verification commit to avoid data.forgejo.org action resolution failures.
         uses: https://github.com/blue-build/github-action@c1c1e56702055fb24f60660162e670203f977195
         with:
-          skip_checkout: "true"
           recipe: recipe.yml
           pr_event_number: 0
           cli_version: v0.9

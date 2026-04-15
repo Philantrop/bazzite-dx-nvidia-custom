@@ -73,36 +73,6 @@ jobs:
           pr_event_number: ${{ github.event.pull_request.number || 0 }}
           rechunk: "false"
 
-      - name: Mirror built image to Forgejo registry (backup)
-        if: ${{ steps.gate.outputs.skip != 'true' && secrets.FORGEJO_REGISTRY_TOKEN != '' && secrets.FORGEJO_REGISTRY_USER != '' }}
-        env:
-          FORGEJO_REGISTRY: forgejo.mailstation.de
-          FORGEJO_REGISTRY_USER: ${{ secrets.FORGEJO_REGISTRY_USER }}
-          FORGEJO_REGISTRY_TOKEN: ${{ secrets.FORGEJO_REGISTRY_TOKEN }}
-        run: |
-          set -euo pipefail
-
-          command -v cosign >/dev/null 2>&1 || { echo 'cosign not found (expected after blue-build step)'; exit 1; }
-
-          RECIPE_PATH="recipes/recipe.yml"
-          IMAGE_NAME="$(awk -F': ' '/^name:/ {print $2; exit}' "${RECIPE_PATH}")"
-          if [ -z "${IMAGE_NAME}" ]; then
-            echo "Could not parse image name from ${RECIPE_PATH}" >&2
-            exit 1
-          fi
-
-          GHCR_NS="$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')"
-          SRC_IMAGE="ghcr.io/${GHCR_NS}/${IMAGE_NAME}:stable"
-          DST_IMAGE="${FORGEJO_REGISTRY}/${FORGEJO_REGISTRY_USER}/${IMAGE_NAME}:stable"
-
-          echo "Mirroring (including cosign signatures/attestations):"
-          echo "  ${SRC_IMAGE} -> ${DST_IMAGE}"
-
-          echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
-          echo "${FORGEJO_REGISTRY_TOKEN}" | docker login "${FORGEJO_REGISTRY}" -u "${FORGEJO_REGISTRY_USER}" --password-stdin
-
-          cosign copy "${SRC_IMAGE}" "${DST_IMAGE}"
-
       - name: Save upstream digest cache gate
         if: steps.gate.outputs.skip != 'true' && steps.digestcache.outputs.cache-hit != 'true' && success()
         uses: actions/cache/save@v4
