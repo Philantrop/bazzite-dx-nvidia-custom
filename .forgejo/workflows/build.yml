@@ -88,4 +88,4 @@ jobs:
         run: |
           set -euo pipefail
           # Mirror local build, but with push enabled in CI
-          bluebuild build --network=host --push "${RECIPE_PATH}"
+          bluebuild build --push "${RECIPE_PATH}"
