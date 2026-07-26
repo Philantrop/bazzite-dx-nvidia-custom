@@ -27,7 +27,21 @@ curl -fL \
   "https://github.com/evilsocket/opensnitch/releases/download/v${version}/opensnitch-ui-${version}-1.noarch.rpm"
 
 dnf install -y \
+  --setopt=tsflags=noscripts \
   "$tmpdir/opensnitch.rpm" \
   "$tmpdir/opensnitch-ui.rpm"
 
-systemctl enable opensnitch.service
+# The RPM's %post script calls systemctl, but image builds do not run systemd.
+# Recreate the enablement and UI autostart links without contacting systemd.
+install -d /etc/systemd/system/multi-user.target.wants
+ln -sfn /usr/lib/systemd/system/opensnitch.service \
+  /etc/systemd/system/multi-user.target.wants/opensnitch.service
+
+if [[ -d /etc/xdg/autostart ]]; then
+  ln -sfn /usr/share/applications/opensnitch_ui.desktop \
+    /etc/xdg/autostart/opensnitch_ui.desktop
+fi
+
+if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+  gtk-update-icon-cache /usr/share/icons/hicolor/ || true
+fi
