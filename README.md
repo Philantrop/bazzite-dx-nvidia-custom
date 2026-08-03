@@ -19,7 +19,6 @@ Built upon `ghcr.io/ublue-os/bazzite-dx-nvidia:stable`.
 
 ## Known Changes & Behavior:
 
-*   **`ujust` Update Logic:** The `--keep` flag has been dropped from `ujust update` calls.
 
 ## Tag Policy
 Operationally supported tag: **`:stable`**  
