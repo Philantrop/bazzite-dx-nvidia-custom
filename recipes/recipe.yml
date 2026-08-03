@@ -2,7 +2,7 @@
 image-version: stable
 
 name: bazzite-dx-nvidia-custom
-description: "Bazzite DX NVIDIA stable + Discover integrations + snap + podman compose & podman-compose + Nix daemon with /nix bind-mounted to /var/nix (signed)"
+description: "Bazzite DX NVIDIA stable + Discover Flatpak/rpm-ostree integrations + snap + podman compose & podman-compose + Nix daemon with /nix bind-mounted to /var/nix (signed)"
 base-image: ghcr.io/ublue-os/bazzite-dx-nvidia
 
 modules:
@@ -14,7 +14,6 @@ modules:
         - plasma-discover-kns
         - plasma-discover-notifier
         - plasma-discover-offline-updates
-        - plasma-discover-packagekit
         - plasma-discover-rpm-ostree
         - plasma-discover-snap
 
@@ -48,5 +47,5 @@ modules:
       - 10-nix-bind-mount.sh
       - 20-nix-selinux.sh
       - 30-run0-selinux-workarounds.sh
-      - 40-ujust-update-drop-keep.sh
+      - 40-ujust-update-console.sh
       - 90-cleanup.sh
