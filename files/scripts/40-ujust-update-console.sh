@@ -10,10 +10,13 @@ fi
 
 # Use uupd's interactive console output for manual updates instead of
 # routing through bazzite-updater and the JSON-only systemd service.
-sed -Ei 's#^[[:space:]]*bazzite-updater --update[[:space:]]*$#    /usr/bin/run0 /usr/bin/uupd --log-level=info#' "$f"
+sed -Ei \
+  -e 's#^[[:space:]]*bazzite-updater --update[[:space:]]*$#    /usr/bin/run0 /usr/bin/uupd --log-level=info#' \
+  -e 's#^[[:space:]]*sudo uupd .*--json.*$#    /usr/bin/run0 /usr/bin/uupd --log-level=info#' \
+  "$f"
 
-if ! grep -q -- '/usr/bin/run0 /usr/bin/uupd --log-level=info' "$f"; then
+if ! grep -Eq '^[[:space:]]*/usr/bin/run0 /usr/bin/uupd --log-level=info[[:space:]]*$' "$f"; then
   echo "Failed to replace the upstream update command in $f" >&2
-  grep -n -- 'bazzite-updater\|uupd' "$f" >&2 || true
+  grep -nE 'bazzite-updater|uupd' "$f" >&2 || true
   exit 1
 fi
