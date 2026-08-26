@@ -11,8 +11,8 @@ fi
 # Use uupd's interactive console output for manual updates instead of
 # routing through bazzite-updater and the JSON-only systemd service.
 sed -Ei \
-  -e 's#^[[:space:]]*bazzite-updater --update[[:space:]]*$#    /usr/bin/run0 /usr/bin/uupd --log-level=info#' \
-  -e 's#^[[:space:]]*sudo uupd .*--json.*$#    /usr/bin/run0 /usr/bin/uupd --log-level=info#' \
+  -e 's#^[[:space:]]*bazzite-updater --update([[:space:]].*)?$#    /usr/bin/run0 /usr/bin/uupd --log-level=info#' \
+  -e 's#^[[:space:]]*(sudo[[:space:]]+)?(/usr/bin/)?uupd[[:space:]].*--json.*$#    /usr/bin/run0 /usr/bin/uupd --log-level=info#' \
   "$f"
 
 if ! grep -Eq '^[[:space:]]*/usr/bin/run0 /usr/bin/uupd --log-level=info[[:space:]]*$' "$f"; then
