@@ -13,6 +13,7 @@ fi
 sed -Ei \
   -e 's#^[[:space:]]*bazzite-updater --update([[:space:]].*)?$#    /usr/bin/run0 /usr/bin/uupd --log-level=info#' \
   -e 's#^[[:space:]]*(sudo[[:space:]]+)?(/usr/bin/)?uupd[[:space:]].*--json.*$#    /usr/bin/run0 /usr/bin/uupd --log-level=info#' \
+  -e 's#^[[:space:]]*/usr/libexec/uupd-update[[:space:]]*\|[[:space:]]*jq.*$#    /usr/bin/run0 /usr/bin/uupd --log-level=info#' \
   "$f"
 
 if ! grep -Eq '^[[:space:]]*/usr/bin/run0 /usr/bin/uupd --log-level=info[[:space:]]*$' "$f"; then
