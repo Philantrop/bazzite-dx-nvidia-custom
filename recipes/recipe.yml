@@ -14,6 +14,7 @@ modules:
         - plasma-discover-kns
         - plasma-discover-notifier
         - plasma-discover-offline-updates
+        - plasma-discover-packagekit
         - plasma-discover-rpm-ostree
         - plasma-discover-snap
 
