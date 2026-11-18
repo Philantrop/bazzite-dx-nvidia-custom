@@ -41,10 +41,6 @@ modules:
 
   - type: script
     scripts:
-      - 06-opensnitch-install.sh
-
-  - type: script
-    scripts:
       - 10-nix-bind-mount.sh
       - 20-nix-selinux.sh
       - 30-run0-selinux-workarounds.sh
